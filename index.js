@@ -1,37 +1,40 @@
 const express = require('express');
 const fs = require('fs');
+const path = require('path');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const { stringify } = require('querystring');
 
 const app = express();
-const port = 3001;
+const port = 3000;
 let id = 0;
 
 app.use(bodyParser.json());
+app.use(cors());
 
 let getIndex = (toDo , fetchId) => {
   for(const i in toDo) {
     if(fetchId === toDo[i].id) return i;
-  }
+  };
   return -1;
-}
+};
 
 let delIndex = (todoarr , fetchId) => {
   const newArr = [];
   for(const i in todoarr) {
     if(todoarr[i].id === fetchId) continue;
     newArr.push(todoarr[i]);
-  }
+  };
   return newArr;
-}
+};
 
 app.get('/todos' , (req ,res) => {
   console.log("get request");
   const data = fs.readFile("todo.json" , "utf-8" , (err , data) => {
     if(err) throw err;
     res.json(JSON.parse(data));
-  })
-})
+  });
+});
 
 app.get('/todos/:id' , (req ,res) => {
   fs.readFile("todo.json" , "utf-8" , (err , data) => {
@@ -39,8 +42,8 @@ app.get('/todos/:id' , (req ,res) => {
     let todo = JSON.parse(data);
     const getindex = getIndex(todo , parseInt(req.params.id));
     res.status(201).send(todo[getindex]);
-  })
-})
+  });
+});
 
 app.post('/todos' , (req , res) => {
   console.log("post req")
@@ -85,12 +88,19 @@ app.delete('/todos/:id' , (req ,res) => {
     fs.writeFile("todo.json" , JSON.stringify(todo) , (err) => {
       if(err) throw err;
       res.status(201).send("done");
-    })
-  })
-})
+    });
+  });
+});
+
+app.get('/' , (req , res) => {
+  res.sendFile(path.join(__dirname , "index.html"));
+});
+
+// needs to be at bottom else blocks all paths
 app.use((req, res , next) => {
   res.status(404).send();
-})
+});
+
 
 app.listen(port , () => {
   console.log(`server started at port number ${port}`)
